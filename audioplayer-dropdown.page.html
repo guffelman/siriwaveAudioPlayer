@@ -1,0 +1,211 @@
+<apex:page standardController="Task">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/siriwave/dist/siriwave.umd.min.js"></script>
+    <div class="container">
+        <div id="siri-container" class="siri-container"></div>
+        <script>
+          var siriWave = new SiriWave({
+            container: document.getElementById("siri-container"),
+            style: "ios9",
+            autostart: false,
+            width: 300,
+            height: 200,
+            speed: 0.12,
+          });
+
+
+
+        // use siriwave to draw the wavefor for the audio 
+        </script>
+<div class="audiodiv">
+
+ <audio class="audioplayer" id="audioplayer" controls="true">
+  <source id="audiosource" src=""  type="audio/wav"></source>
+  
+</audio>
+<button class="skip" id="skip" onclick="skip()">Skip</button>
+
+</div>
+<select class="select" id="select" name="select">
+</select>
+<a class="downloadtext"  href="https://www2.cs.uic.edu/~i101/SoundFiles/Fanfare60.wav">Download</a>
+
+ <!-- on the same line-->
+
+
+
+
+
+</div>
+<style>
+    /*Make the audio player centered, the skip button small and to the right of it on the same line. The dropdown should be underneath it and styled. The skip button should be on the same line as the audio player */
+    .container{
+        text-align: center;
+
+    }
+    .siri-container{
+        margin: 0 auto;
+        margin-bottom: -50px;
+    }
+    
+    .audiodiv{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .audioplayer{
+        width: 300px;
+        height: 50px;
+    }
+    .skip{
+        width: 30px;
+        height: 30px;
+        margin-left: 10px;
+        color: black;
+        background-color: #f1f3f4;
+        border: 0px;
+        border-radius: 15px;
+    }
+    .select{
+        width: 200px;
+        height: 25px;
+        margin-top: 10px;
+        border-radius: 15px;
+
+        /* make the dropdown pretty */
+
+    }
+    .downloadtext{
+        margin-top: 10px;
+    }
+
+
+</style>
+<script>
+    // get the audio from the urls
+    var links = ["https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand3.wav","https://www2.cs.uic.edu/~i101/SoundFiles/StarWars3.wav"]
+    // if there is only one link, hide the select dropdown
+    if (links.length == 1) {
+        var select = document.getElementsByName("select")[0];
+        select.style.display = "none";
+        // set the audio source to the only link
+        document.getElementById("audioplayer").src = links[0];
+    }
+    else {
+        // if there are multiple links, add them to the select dropdown
+        for (var i = 0; i < links.length; i++) {
+    
+            
+            var option = document.createElement("option");
+            option.text = links[i].substring(links[i].lastIndexOf("/") + 1, links[i].lastIndexOf("."));
+            option.value = links[i];
+            var select = document.getElementsByName("select")[0];
+            select.add(option);
+        }
+
+       
+        
+     // set the audio source to the first link
+    document.getElementById("audioplayer").src = links[0];
+    }
+    
+    
+  
+    // get the audio element
+    audio = document.getElementById("audioplayer");
+    // get the audio context
+    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // get the audio source
+    var source = audioCtx.createMediaElementSource(audio);
+    // create an analyser node
+    var analyser = audioCtx.createAnalyser();
+    // connect the source to the analyser
+    source.connect(analyser);
+    // connect the analyser to the destination
+    analyser.connect(audioCtx.destination);
+    // allow the audio to play
+    audio.play();
+    // get the frequency data
+    var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    // get the time domain data
+    var timeDomainData = new Uint8Array(analyser.frequencyBinCount);
+    // get the waveform data
+    var waveform = new Float32Array(analyser.frequencyBinCount);
+    
+    // when the audio is playing, draw the waveform
+    audio.addEventListener("playing", function() {
+        siriWave.start();
+        draw();
+    });
+    // when the audio is paused, stop drawing the waveform
+    audio.addEventListener("pause", function() {
+        siriWave.stop();
+    });
+    // when the audio is ended, stop drawing the waveform
+    audio.addEventListener("ended", function() {
+        siriWave.stop();
+    });
+    // when the audio is muted, stop drawing the waveform
+    audio.addEventListener("volumechange", function() {
+        if (audio.muted) {
+            siriWave.stop();
+        }
+    });
+    // when the audio is unmuted, draw the waveform
+    audio.addEventListener("volumechange", function() {
+        if (!audio.muted) {
+            siriWave.start();
+        }
+    });
+
+
+    
+
+
+
+
+    // set skip button icon to glyphicon glyphicon-forward
+    document.getElementById("skip").innerHTML = '<span class="glyphicon glyphicon-forward"></span>';
+
+    function skip(){
+        var select = document.getElementsByName("select")[0];
+        var index = select.selectedIndex;
+        if(index == links.length-1){
+            select.selectedIndex = 0;
+        }
+        else{
+            select.selectedIndex = index+1;
+        }
+        document.getElementById("audioplayer").src = select.value;
+    }
+    
+
+    
+        // listen for a change in the select dropdown
+        document.getElementById("select").addEventListener("change", function() {
+            // set the audio source to the selected link
+            document.getElementById("audioplayer").src = this.value;
+        });
+    
+//        document.getElementById("audioplayer").addEventListener("play", function() {
+//            siriWave.start();
+//        });
+//    
+//        document.getElementById("audioplayer").addEventListener("pause", function() {
+//            siriWave.stop();
+//        });
+//        // event listener for ending the audio
+//        document.getElementById("audioplayer").addEventListener("ended", function() {
+//            siriWave.clear();
+//        });
+//        // match the audio volume to the siriwave volume
+        document.getElementById("audioplayer").addEventListener("volumechange", function() {
+            // set the siriwave amplitude to the audio volume
+            siriWave.setAmplitude(this.volume);
+        });
+
+
+</script>
+
+</apex:page>
